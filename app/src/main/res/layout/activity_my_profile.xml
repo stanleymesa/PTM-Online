@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MyProfileActivity">
+
+    <RelativeLayout
+        app:layout_constraintTop_toTopOf="parent"
+        android:id="@+id/layout_topBar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/navy">
+
+        <ImageView
+            android:id="@+id/btn_back_pelajaran"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="16dp"
+            app:tint="@color/white"
+            android:src="@drawable/ic_baseline_arrow_back_ios_24"/>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/layout_gradient"
+        app:layout_constraintTop_toBottomOf="@id/layout_topBar"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:background="@drawable/gradient_orange_background"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        app:layout_constraintTop_toBottomOf="@id/layout_topBar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:id="@+id/iv_photoprofile_my"
+        android:src="@drawable/avatar"
+        android:layout_marginTop="16dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_choose_image"
+        app:layout_constraintTop_toBottomOf="@id/layout_gradient"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:strokeColor="@color/navy"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Choose Image"
+        app:cornerRadius="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_delete_image"
+        app:layout_constraintTop_toBottomOf="@id/btn_choose_image"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:strokeColor="@color/red"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="100dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Delete Image"
+        android:textColor="@color/red"
+        app:cornerRadius="16dp"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_save_image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="16dp"
+        android:text="Save &amp; Close settings"
+        android:textColor="@color/white"
+        app:cornerRadius="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_delete_image"
+        app:strokeColor="@color/navy" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

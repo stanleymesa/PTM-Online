@@ -1,0 +1,3 @@
+SQLite dalam projek ini diterapkan pada
+upload foto profil di navigation menu yang terletak
+di layout Dashboard 
