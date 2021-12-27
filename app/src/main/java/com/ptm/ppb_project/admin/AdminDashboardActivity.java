@@ -1,6 +1,7 @@
 package com.ptm.ppb_project.admin;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -20,7 +21,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.ptm.ppb_project.R;
@@ -70,10 +73,6 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
         loginSession = new SessionManager(this, SessionManager.LOGIN_SESSION);
         rememberMeSession = new SessionManager(this, SessionManager.REMEMBERME_SESSION);
 
-        setAdminArea();
-        setInitialTodayLessons();
-
-
         btnMenu.setOnClickListener(this);
         btnLogout.setOnClickListener(this);
     }
@@ -82,9 +81,9 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
     protected void onResume() {
         super.onResume();
         setNavDrawer();
+        setAdminArea();
+        setInitialTodayLessons();
     }
-
-
 
     private void setInitialTodayLessons() {
         listPelajaran.clear();
@@ -146,13 +145,20 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
         // End Set
 
         // Set Registered
-        firestoreRoot.document("stats/qty").get()
-                .addOnSuccessListener(this, new OnSuccessListener<DocumentSnapshot>() {
+        firestoreRoot.document("stats/qty")
+                .addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
                     @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        tvTotalStudents.setText(String.valueOf(documentSnapshot.getLong("user")));
-                        tvTotalLessons.setText(String.valueOf(documentSnapshot.getLong("pelajaran")));
+                    public void onEvent(DocumentSnapshot value, FirebaseFirestoreException error) {
+                        if (error != null) {
+                            return;
+                        }
+
+                        if (value != null) {
+                            tvTotalStudents.setText(String.valueOf(value.getLong("user")));
+                            tvTotalLessons.setText(String.valueOf(value.getLong("pelajaran")));
+                        }
                     }
+
                 });
         // End Set
 

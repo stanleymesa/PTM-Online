@@ -37,7 +37,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
     FirebaseFirestore firestoreRoot;
     SearchLessonsAdapter adapter;
     DocumentSnapshot lastVisible;
-    String hintFromInitiator;
+    String hint = "";
     ArrayList<PelajaranModel> listPelajaran = new ArrayList<>();
 
     @Override
@@ -56,9 +56,15 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
         // On Click
         fabAddLessons.setOnClickListener(this);
 
-        initiateRecycler("");
         setSearch();
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        initiateRecycler(hint);
+        Toast.makeText(this, hint, Toast.LENGTH_SHORT).show();
     }
 
     private void initiateRecycler(String hint) {
@@ -66,7 +72,6 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
         rvSearch.setLayoutManager(new LinearLayoutManager(this));
 
         if (hint.isEmpty()) {
-            hintFromInitiator = "";
             firestoreRoot.collection("pelajaran")
                     .orderBy("kelas")
                     .orderBy("matpel")
@@ -91,7 +96,6 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                     });
         }
         else {
-            hintFromInitiator = hint;
             firestoreRoot.collection("pelajaran")
                     .whereArrayContains("slug", hint)
                     .orderBy("kelas")
@@ -179,7 +183,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    String hint = tiSearch.getEditText().getText().toString();
+                    hint = tiSearch.getEditText().getText().toString().toLowerCase();
                     initiateRecycler(hint);
                 }
 
@@ -200,6 +204,6 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
     @Override
     public void onShowMoreClick(TextView tvShowMore) {
         tvShowMore.setVisibility(View.GONE);
-        showMoreRecycler(hintFromInitiator);
+        showMoreRecycler(hint);
     }
 }

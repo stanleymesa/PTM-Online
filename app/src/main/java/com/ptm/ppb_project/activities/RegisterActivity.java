@@ -240,11 +240,12 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     }
 
     private void setDropdownKelas() {
+        DataKelas dataKelas = new DataKelas();
         ArrayAdapter<String> kelasAdapter = new ArrayAdapter<>(
-                this, R.layout.item_dropdown, new DataKelas().getKelas()
+                this, R.layout.item_dropdown, dataKelas.getKelas()
         );
         ArrayAdapter<String> namaKelasAdapter = new ArrayAdapter<>(
-                this, R.layout.item_dropdown, new DataKelas().getNamaKelas()
+                this, R.layout.item_dropdown, dataKelas.getNamaKelas()
         );
 
         dropdownKelas.setAdapter(kelasAdapter);
