@@ -14,16 +14,20 @@ import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.ptm.ppb_project.R;
 import com.ptm.ppb_project.model.CartModel;
+import com.ptm.ppb_project.model.PelajaranModel;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
-public class CartAdapter extends FirestoreRecyclerAdapter<CartModel, CartAdapter.CartViewHolder> {
+public class CartAdapter extends FirestoreRecyclerAdapter<PelajaranModel, CartAdapter.CartViewHolder> {
 
     private OnItemClickCallback onItemClickCallback;
+    private ArrayList<Long> cartCreatedAt;
 
-    public CartAdapter(@NonNull FirestoreRecyclerOptions<CartModel> options, OnItemClickCallback onItemClickCallback) {
+    public CartAdapter(@NonNull FirestoreRecyclerOptions<PelajaranModel> options, OnItemClickCallback onItemClickCallback, ArrayList<Long> cartCreatedAt) {
         super(options);
         this.onItemClickCallback = onItemClickCallback;
+        this.cartCreatedAt = cartCreatedAt;
     }
 
     public class CartViewHolder extends RecyclerView.ViewHolder {
@@ -74,13 +78,13 @@ public class CartAdapter extends FirestoreRecyclerAdapter<CartModel, CartAdapter
 
     @SuppressLint("SetTextI18n")
     @Override
-    protected void onBindViewHolder(@NonNull CartViewHolder holder, int position, @NonNull CartModel model) {
+    protected void onBindViewHolder(@NonNull CartViewHolder holder, int position, @NonNull PelajaranModel model) {
         holder.getTvMatpel().setText(model.getMatpel());
         holder.getTvKelas().setText("Kelas " + model.getKelas());
         holder.getTvMateri().setText(model.getMateri());
         holder.getTvWaktu().setText(model.getHari() + ", " + convertToString(model.getStart_at()) + " - " + convertToString(model.getFinish_at()) + " WIB");
         @SuppressLint("SimpleDateFormat") SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        String date = formatter.format(model.getCreated_at());
+        String date = formatter.format(cartCreatedAt.get(position));
         holder.getTvCreatedAt().setText(date);
 
         holder.getIvMinus().setOnClickListener(new View.OnClickListener() {
@@ -112,7 +116,7 @@ public class CartAdapter extends FirestoreRecyclerAdapter<CartModel, CartAdapter
     }
 
     public interface OnItemClickCallback {
-        void onItemDeleteFromCart(CartModel dataCart);
+        void onItemDeleteFromCart(PelajaranModel dataCart);
     }
 
 

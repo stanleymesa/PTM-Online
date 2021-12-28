@@ -18,13 +18,19 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.Transaction;
 import com.ptm.ppb_project.R;
 import com.ptm.ppb_project.adapter.CartAdapter;
 import com.ptm.ppb_project.model.CartModel;
+import com.ptm.ppb_project.model.PelajaranModel;
+
+import java.util.ArrayList;
 
 public class CartActivity extends AppCompatActivity implements CartAdapter.OnItemClickCallback, View.OnClickListener {
 
@@ -56,15 +62,42 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
     private void setCartAdapter() {
         assert mAuth.getCurrentUser() != null;
 
-        Query query = firestoreRoot.collection("carts/CART_" + mAuth.getCurrentUser().getUid() + "/items");
-        FirestoreRecyclerOptions<CartModel> options = new FirestoreRecyclerOptions.Builder<CartModel>()
-                .setLifecycleOwner(this)
-                .setQuery(query, CartModel.class)
-                .build();
-
         rvCart.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new CartAdapter(options, this);
-        rvCart.setAdapter(adapter);
+
+        firestoreRoot.collection("carts/CART_" + mAuth.getCurrentUser().getUid() + "/items")
+                .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
+                        if (error != null) {
+                            return;
+                        }
+
+                        // Jika ada cart
+                        if (value != null && !value.isEmpty()) {
+                            ArrayList<String> cartId = new ArrayList<>();
+                            ArrayList<Long> cartCreatedAt = new ArrayList<>();
+                            for (DocumentSnapshot ds : value) {
+                                cartId.add(ds.getId());
+                                cartCreatedAt.add(ds.getLong("created_at"));
+                            }
+
+                            Query query = firestoreRoot.collection("pelajaran").whereIn(FieldPath.documentId(), cartId);
+                            FirestoreRecyclerOptions<PelajaranModel> options = new FirestoreRecyclerOptions.Builder<PelajaranModel>()
+                                    .setLifecycleOwner(CartActivity.this)
+                                    .setQuery(query, PelajaranModel.class)
+                                    .build();
+                            adapter = new CartAdapter(options, CartActivity.this, cartCreatedAt);
+                            rvCart.setAdapter(adapter);
+                        }
+
+                        // Jika tidak ada cart
+                        else {
+                            rvCart.setVisibility(View.GONE);
+                        }
+
+                    }
+                });
+
     }
 
     private void addKuota(String idPelajaran) {
@@ -91,7 +124,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
     }
 
     @Override
-    public void onItemDeleteFromCart(CartModel dataCart) {
+    public void onItemDeleteFromCart(PelajaranModel dataCart) {
         assert mAuth.getCurrentUser() != null;
         firestoreRoot.document("carts/CART_" + mAuth.getCurrentUser().getUid() + "/items/" + dataCart.getId()).delete()
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {

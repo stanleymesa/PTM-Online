@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -104,20 +105,45 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                         if (error != null) {
                             return;
                         }
-
+                        // Jika Cart ada
                         if (value != null && !value.isEmpty()) {
-                            ArrayList<CartModel> dataCart = new ArrayList<>();
+                            ArrayList<String> dataId = new ArrayList<>();
                             for (DocumentSnapshot ds : value) {
-                                dataCart.add(ds.toObject(CartModel.class));
+                                dataId.add(ds.getId());
                             }
 
-                            adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
-                            rv.setAdapter(adapter);
+                            firestoreRoot.collection("pelajaran").whereIn(FieldPath.documentId(), dataId)
+                                    .addSnapshotListener(PelajaranActivity.this, new EventListener<QuerySnapshot>() {
+                                        @Override
+                                        public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
+                                            if (error != null) {
+                                                return;
+                                            }
+
+                                            // Jika ada pelajarannya
+                                            if (value != null && !value.isEmpty()) {
+                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
+                                                for (DocumentSnapshot ds : value) {
+                                                    dataCart.add(ds.toObject(PelajaranModel.class));
+                                                }
+                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
+                                            }
+
+                                            // Jika tidak ada pelajarannya
+                                            else {
+                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
+                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
+                                            }
+                                            rv.setAdapter(adapter);
+
+                                        }
+                                    });
 
                         }
 
+                        // Jika tidak ada Cart
                         else {
-                            ArrayList<CartModel> dataCart = new ArrayList<>();
+                            ArrayList<PelajaranModel> dataCart = new ArrayList<>();
                             adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
                             rv.setAdapter(adapter);
 
@@ -183,7 +209,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
 
     @Override
     public void onItemAddToCart(PelajaranModel dataPelajaran) {
-        CartModel dataCart = new CartModel(dataPelajaran, System.currentTimeMillis());
+        CartModel dataCart = new CartModel(System.currentTimeMillis());
         firestoreRoot.document("carts/CART_" + uid + "/items/" + dataPelajaran.getId()).set(dataCart)
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override

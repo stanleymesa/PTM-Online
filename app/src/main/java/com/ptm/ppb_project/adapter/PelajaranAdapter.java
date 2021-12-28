@@ -21,12 +21,12 @@ import java.util.ArrayList;
 public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, PelajaranAdapter.PelajaranViewHolder> {
 
     private OnItemClickCallback onItemClickCallback;
-    private ArrayList<CartModel> dataCart;
+    private ArrayList<PelajaranModel> dataCart;
 
     public PelajaranAdapter(
             @NonNull FirestoreRecyclerOptions<PelajaranModel> options,
             OnItemClickCallback onItemClickCallback,
-            ArrayList<CartModel> dataCart
+            ArrayList<PelajaranModel> dataCart
     ) {
         super(options);
         this.onItemClickCallback = onItemClickCallback;
@@ -149,24 +149,24 @@ public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, P
         }
 
 
-        for (CartModel cartModel : dataCart) {
+        for (PelajaranModel myCart : dataCart) {
             // Jika Matpel sudah ada di cart, plus hilang, minus ada
-            if (model.getId().equals(cartModel.getId())) {
+            if (model.getId().equals(myCart.getId())) {
                 holder.ivPlus.setVisibility(View.GONE);
                 holder.ivMinus.setVisibility(View.VISIBLE);
             }
 
 
             // Bentrok Logic
-            if (cartModel.getHari().equals(model.getHari())) {
+            if (myCart.getHari().equals(model.getHari())) {
                 if (
-                        (model.getStart_at() >= cartModel.getStart_at() && model.getStart_at() <= cartModel.getFinish_at()) ||
-                        (model.getFinish_at() >= cartModel.getStart_at() && model.getFinish_at() <= cartModel.getFinish_at())
+                        (model.getStart_at() >= myCart.getStart_at() && model.getStart_at() <= myCart.getFinish_at()) ||
+                        (model.getFinish_at() >= myCart.getStart_at() && model.getFinish_at() <= myCart.getFinish_at())
                 ) {
                     holder.ivPlus.setVisibility(View.GONE);
                     holder.getTvBentrokTitle().setVisibility(View.VISIBLE);
                     holder.getTvBentrokMateri().setVisibility(View.VISIBLE);
-                    holder.getTvBentrokMateri().setText(cartModel.getMatpel() + " " + cartModel.getMateri() + " " + convertToString(cartModel.getStart_at()) + " - " + convertToString(cartModel.getFinish_at()) + " WIB");
+                    holder.getTvBentrokMateri().setText(myCart.getMatpel() + " " + myCart.getMateri() + " " + convertToString(myCart.getStart_at()) + " - " + convertToString(myCart.getFinish_at()) + " WIB");
                 }
             }
             // End Bentrok Logic
