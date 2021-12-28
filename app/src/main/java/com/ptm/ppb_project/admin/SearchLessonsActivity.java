@@ -1,10 +1,12 @@
 package com.ptm.ppb_project.admin;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -14,15 +16,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Transaction;
 import com.ptm.ppb_project.R;
 import com.ptm.ppb_project.adapter.SearchLessonsAdapter;
 import com.ptm.ppb_project.model.PelajaranModel;
@@ -64,7 +70,6 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
     protected void onResume() {
         super.onResume();
         initiateRecycler(hint);
-        Toast.makeText(this, hint, Toast.LENGTH_SHORT).show();
     }
 
     private void initiateRecycler(String hint) {
@@ -192,6 +197,22 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
         });
     }
 
+    private void removeLessonStats() {
+        firestoreRoot.runTransaction(new Transaction.Function<Void>() {
+            @Nullable
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
+                DocumentReference docRef = firestoreRoot.document("stats/qty");
+                DocumentSnapshot dataSnapshot = transaction.get(docRef);
+                // Logic
+                long newStat = dataSnapshot.getLong("pelajaran") - 1;
+                transaction.update(docRef, "pelajaran", newStat);
+                return null;
+            }
+        });
+    }
+
     @Override
     public void onClick(View v) {
         int btnId = v.getId();
@@ -205,5 +226,41 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
     public void onShowMoreClick(TextView tvShowMore) {
         tvShowMore.setVisibility(View.GONE);
         showMoreRecycler(hint);
+    }
+
+    @Override
+    public void onEditLessons(PelajaranModel pelajaranModel) {
+        Intent intent = new Intent(this, EditLessonsActivity.class);
+        intent.putExtra("data", pelajaranModel);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onDeleteLessons(PelajaranModel pelajaranModel) {
+        new MaterialAlertDialogBuilder(this)
+                .setMessage("Apakah anda yakin ingin menghapus pelajaran " + pelajaranModel.getMateri() + " ?")
+                .setCancelable(true)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        firestoreRoot.document("pelajaran/" + pelajaranModel.getId()).delete()
+                                .addOnSuccessListener(SearchLessonsActivity.this, new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void unused) {
+                                        removeLessonStats();
+                                        Toast.makeText(SearchLessonsActivity.this, "Berhasil delete lesson!", Toast.LENGTH_SHORT).show();
+                                        initiateRecycler(hint);
+                                    }
+                                })
+                                .addOnFailureListener(SearchLessonsActivity.this, new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(SearchLessonsActivity.this, "Gagal delete lesson!", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                })
+                .show();
     }
 }

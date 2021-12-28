@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ppbproject">
         <activity
+            android:name=".admin.EditLessonsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.MyProfileActivity"
             android:exported="false" />
         <activity android:name=".admin.AddLessonsActivity" />
@@ -26,7 +29,8 @@
         <activity android:name=".activities.VerifyOtpActivity" />
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.RegisterActivity" />
-        <activity android:name=".activities.SplashActivity"
+        <activity
+            android:name=".activities.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

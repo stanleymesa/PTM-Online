@@ -123,6 +123,20 @@ public class SearchLessonsAdapter extends RecyclerView.Adapter<SearchLessonsAdap
             }
         });
 
+        holder.getIvEdit().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onItemClickCallback.onEditLessons(data);
+            }
+        });
+
+        holder.getIvDelete().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onItemClickCallback.onDeleteLessons(data);
+            }
+        });
+
     }
 
     @Override
@@ -145,6 +159,8 @@ public class SearchLessonsAdapter extends RecyclerView.Adapter<SearchLessonsAdap
 
     public interface OnItemClickCallback {
         void onShowMoreClick(TextView tvShowMore);
+        void onEditLessons(PelajaranModel pelajaranModel);
+        void onDeleteLessons(PelajaranModel pelajaranModel);
     }
 
 }

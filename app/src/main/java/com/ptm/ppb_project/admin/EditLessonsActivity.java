@@ -1,17 +1,16 @@
 package com.ptm.ppb_project.admin;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.RelativeLayout;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -20,11 +19,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Transaction;
 import com.ptm.ppb_project.R;
 import com.ptm.ppb_project.data.DataKelas;
 import com.ptm.ppb_project.model.PelajaranModel;
@@ -33,58 +28,81 @@ import com.ptm.ppb_project.timer.TimerPickerFragment;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class AddLessonsActivity extends AppCompatActivity implements View.OnClickListener, TimePickerDialog.OnTimeSetListener{
+public class EditLessonsActivity extends AppCompatActivity implements View.OnClickListener, TimePickerDialog.OnTimeSetListener {
 
     TextInputLayout tiMatpel, tiMateri, tiKelas, tiHari, tiStartAt, tiFinishAt, tiKuota;
     TextInputEditText etStartAt, etFinishAt;
     AutoCompleteTextView dropdownKelas, dropdownHari, dropdownMatpel;
-    MaterialButton btnAddLessons, btnPickStart, btnPickFinish;
+    MaterialButton btnEditlessons, btnPickStart, btnPickFinish;
     FirebaseFirestore firestoreRoot;
     String timePickerName = "";
     String matpel, materi, kelas, hari, startAt, finishAt, kuota;
+    PelajaranModel dataFromIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_lessons);
+        setContentView(R.layout.activity_edit_lessons);
 
         // Hooks
-        tiMatpel = findViewById(R.id.ti_matpel_addlessons);
-        tiMateri = findViewById(R.id.ti_materi_addlessons);
-        tiKelas = findViewById(R.id.ti_kelas_addlessons);
-        tiHari = findViewById(R.id.ti_hari_addlessons);
-        tiStartAt = findViewById(R.id.ti_start_at_addlessons);
-        tiFinishAt = findViewById(R.id.ti_finish_at_addlessons);
-        tiKuota = findViewById(R.id.ti_kuota);
-        dropdownKelas = findViewById(R.id.dropdown_kelas_addlessons);
-        dropdownHari = findViewById(R.id.dropdown_hari_addlessons);
-        dropdownMatpel = findViewById(R.id.dropdown_matpel_addlessons);
-        btnAddLessons = findViewById(R.id.btn_addlessons);
-        etStartAt = findViewById(R.id.et_start_at_addlessons);
-        etFinishAt = findViewById(R.id.et_finish_at_addlessons);
-        btnPickStart = findViewById(R.id.btn_picktime_start_at_addlessons);
-        btnPickFinish = findViewById(R.id.btn_picktime_finish_at_addlessons);
+        tiMatpel = findViewById(R.id.ti_matpel_editlessons);
+        tiMateri = findViewById(R.id.ti_materi_editlessons);
+        tiKelas = findViewById(R.id.ti_kelas_editlessons);
+        tiHari = findViewById(R.id.ti_hari_editlessons);
+        tiStartAt = findViewById(R.id.ti_start_at_editlessons);
+        tiFinishAt = findViewById(R.id.ti_finish_at_editlessons);
+        tiKuota = findViewById(R.id.ti_kuota_editlessons);
+        dropdownKelas = findViewById(R.id.dropdown_kelas_editlessons);
+        dropdownHari = findViewById(R.id.dropdown_hari_editlessons);
+        dropdownMatpel = findViewById(R.id.dropdown_matpel_editlessons);
+        btnEditlessons = findViewById(R.id.btn_editlessons);
+        etStartAt = findViewById(R.id.et_start_at_editlessons);
+        etFinishAt = findViewById(R.id.et_finish_at_editlessons);
+        btnPickStart = findViewById(R.id.btn_picktime_start_at_editlessons);
+        btnPickFinish = findViewById(R.id.btn_picktime_finish_at_editlessons);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
 
         // On Click
-        btnAddLessons.setOnClickListener(this);
+        btnEditlessons.setOnClickListener(this);
         btnPickStart.setOnClickListener(this);
         btnPickFinish.setOnClickListener(this);
 
         setDropdown();
-
-
+        setDataFromIntent();
     }
 
-    private void addLessonToDB() {
+    private void setDataFromIntent() {
+        // Intent
+        dataFromIntent = getIntent().getParcelableExtra("data");
+
+        // Assert
+        assert tiMatpel.getEditText() != null;
+        assert tiMateri.getEditText() != null;
+        assert tiKelas.getEditText() != null;
+        assert tiHari.getEditText() != null;
+        assert tiStartAt.getEditText() != null;
+        assert tiFinishAt.getEditText() != null;
+        assert tiKuota.getEditText() != null;
+
+        tiMatpel.getEditText().setText(dataFromIntent.getMatpel());
+        tiMateri.getEditText().setText(dataFromIntent.getMateri());
+        tiKelas.getEditText().setText(dataFromIntent.getKelas());
+        tiHari.getEditText().setText(dataFromIntent.getHari());
+        tiStartAt.getEditText().setText(setTimerFromIntent(dataFromIntent.getStart_at()));
+        tiFinishAt.getEditText().setText(setTimerFromIntent(dataFromIntent.getFinish_at()));
+        tiKuota.getEditText().setText(String.valueOf(dataFromIntent.getKuota()));
+    }
+
+    private void editLessonToDB() {
 
         if (!allValidation()) {
             return;
         }
 
-        String id = UUID.randomUUID().toString();
+        String id = dataFromIntent.getId();
+
         PelajaranModel pelajaranModel = new PelajaranModel(
                 id,
                 matpel,
@@ -101,8 +119,7 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        addLessonsToStats();
-                        Toast.makeText(getBaseContext(), "Berhasil Input Lessons", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(), "Berhasil Edit Lessons", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(this, new OnFailureListener() {
@@ -113,24 +130,25 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
                 });
     }
 
-    private void addLessonsToStats() {
-        firestoreRoot.runTransaction(new Transaction.Function<Void>() {
-            @Nullable
-            @org.jetbrains.annotations.Nullable
-            @Override
-            public Void apply(@NonNull Transaction transaction) throws FirebaseFirestoreException {
-                DocumentReference docRef = firestoreRoot.document("stats/qty");
-                DocumentSnapshot dataSnapshot = transaction.get(docRef);
-                // Logic
-                long newStat = dataSnapshot.getLong("pelajaran") + 1;
-                transaction.update(docRef, "pelajaran", newStat);
-                return null;
-            }
-        });
-    }
-
     private String cleanTimer(String time) {
         return time.replace(":", "").replaceAll("\\s", "");
+    }
+
+    private String setTimerFromIntent(long time) {
+        String waktuString = String.valueOf(time);
+
+        // Menambahkan : waktuString
+        StringBuilder after = new StringBuilder(waktuString);
+        if (waktuString.length() == 3) {
+            after.insert(1, ":");
+            after.insert(1, " ");
+            after.insert(3, " ");
+        } else {
+            after.insert(2, ":");
+            after.insert(2, " ");
+            after.insert(4, " ");
+        }
+        return after.toString();
     }
 
     private void validateMatpel() {
@@ -228,6 +246,17 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
                 && tiKuota.getError() == null;
     }
 
+    private void setDropdown() {
+        DataKelas dataKelas = new DataKelas();
+        ArrayAdapter<String> kelasAdapter = new ArrayAdapter<>(this, R.layout.item_dropdown, dataKelas.getKelas());
+        ArrayAdapter<String> hariAdapter = new ArrayAdapter<>(this, R.layout.item_dropdown, dataKelas.getHari());
+        ArrayAdapter<String> matpelAdapter = new ArrayAdapter<>(this, R.layout.item_dropdown, dataKelas.getMatpel());
+
+        dropdownKelas.setAdapter(kelasAdapter);
+        dropdownHari.setAdapter(hariAdapter);
+        dropdownMatpel.setAdapter(matpelAdapter);
+    }
+
 
     private ArrayList<String> generateKeywords(String materi) {
         String text = materi.toLowerCase().trim();
@@ -240,37 +269,26 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
         return key;
     }
 
-    private void setDropdown() {
-        DataKelas dataKelas = new DataKelas();
-        ArrayAdapter<String> kelasAdapter = new ArrayAdapter<>(this, R.layout.item_dropdown, dataKelas.getKelas());
-        ArrayAdapter<String> hariAdapter = new ArrayAdapter<>(this, R.layout.item_dropdown, dataKelas.getHari());
-        ArrayAdapter<String> matpelAdapter = new ArrayAdapter<>(this, R.layout.item_dropdown, dataKelas.getMatpel());
-
-        dropdownKelas.setAdapter(kelasAdapter);
-        dropdownHari.setAdapter(hariAdapter);
-        dropdownMatpel.setAdapter(matpelAdapter);
-    }
 
     @Override
-    public void onClick(View v) {
-        int btnId = v.getId();
+    public void onClick(View view) {
+        int btnId = view.getId();
 
-        if (btnId == R.id.btn_addlessons) {
-            addLessonToDB();
+        if (btnId == R.id.btn_editlessons) {
+            editLessonToDB();
         }
 
-        if (btnId == R.id.btn_picktime_start_at_addlessons) {
+        if (btnId == R.id.btn_picktime_start_at_editlessons) {
             timePickerName = "start_at";
             DialogFragment timePicker = new TimerPickerFragment();
             timePicker.show(getSupportFragmentManager(), "time_picker");
         }
 
-        if (btnId == R.id.btn_picktime_finish_at_addlessons) {
+        if (btnId == R.id.btn_picktime_finish_at_editlessons) {
             timePickerName = "finish_at";
             DialogFragment timePicker = new TimerPickerFragment();
             timePicker.show(getSupportFragmentManager(), "time_picker");
         }
-
     }
 
     @SuppressLint("SetTextI18n")
@@ -297,7 +315,5 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
             }
             etFinishAt.setText(hour + " : " + menit);
         }
-
     }
-
 }
