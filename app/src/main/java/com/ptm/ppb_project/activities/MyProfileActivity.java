@@ -25,7 +25,7 @@ import java.util.List;
 
 public class MyProfileActivity extends AppCompatActivity implements View.OnClickListener {
 
-    ImageView ivProfile;
+    ImageView ivProfile, ivBack;
     MaterialButton btnChoose, btnSave, btnDelete;
     Uri photoProfileUri;
     FirebaseAuth mAuth;
@@ -41,6 +41,7 @@ public class MyProfileActivity extends AppCompatActivity implements View.OnClick
 
         // Hooks
         ivProfile = findViewById(R.id.iv_photoprofile_my);
+        ivBack = findViewById(R.id.iv_back_myprofile);
         btnChoose = findViewById(R.id.btn_choose_image);
         btnSave = findViewById(R.id.btn_save_image);
         btnDelete = findViewById(R.id.btn_delete_image);
@@ -56,6 +57,7 @@ public class MyProfileActivity extends AppCompatActivity implements View.OnClick
         btnChoose.setOnClickListener(this);
         btnSave.setOnClickListener(this);
         btnDelete.setOnClickListener(this);
+        ivBack.setOnClickListener(this);
     }
 
     private void setSQLite() {
@@ -126,6 +128,10 @@ public class MyProfileActivity extends AppCompatActivity implements View.OnClick
                 ProfileModel profileModel = new ProfileModel(userId, photoProfileUri.toString());
                 profileViewModel.delete(profileModel);
             }
+        }
+
+        if (btnId == R.id.iv_back_myprofile) {
+            finish();
         }
     }
 }

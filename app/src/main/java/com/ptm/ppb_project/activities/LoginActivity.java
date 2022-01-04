@@ -2,6 +2,7 @@ package com.ptm.ppb_project.activities;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,10 +10,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -42,7 +45,7 @@ public class LoginActivity extends AppCompatActivity
     CheckBox rememberMeCheckbox;
     FirebaseAuth mAuth;
     FirebaseFirestore firestoreRoot;
-    SessionManager loginSession, rememberMeSession;
+    SessionManager loginSession, rememberMeSession, updatePasswordSession;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,11 +55,12 @@ public class LoginActivity extends AppCompatActivity
         // Hooks
         btnLogin = findViewById(R.id.btn_login);
         ivCloseLogin = findViewById(R.id.btn_close_login);
-        btnRegisterAtLogin = findViewById(R.id.btn_sudah_punya_akun);
+        btnRegisterAtLogin = findViewById(R.id.btn_belum_punya_akun);
         btnLupaPassword = findViewById(R.id.btn_lupapassword);
         tiNoHp = findViewById(R.id.ti_noHp_login);
         tiPassword = findViewById(R.id.ti_password_login);
         rememberMeCheckbox = findViewById(R.id.checkbox_rememberme);
+        updatePasswordSession = new SessionManager(this, SessionManager.UPDATE_PASSWORD_SESSION);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -72,6 +76,44 @@ public class LoginActivity extends AppCompatActivity
         btnRegisterAtLogin.setOnClickListener(this);
         btnLupaPassword.setOnClickListener(this);
         ivCloseLogin.setOnClickListener(this);
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setSnackbarFromUpdatePass();
+    }
+
+    private void setSnackbarFromUpdatePass() {
+        if (updatePasswordSession.isPasswordUpdated()) {
+            if (updatePasswordSession.isUpdatePasswordSuccess()) {
+                setSnackbar("Update Password Success!");
+                updatePasswordSession.clearUpdatePasswordSession();
+            }
+            else {
+                setSnackbar("Update Password Failed!");
+                updatePasswordSession.clearUpdatePasswordSession();
+            }
+        }
+    }
+
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
     }
 
     private void setEditTextLoginSession() {
@@ -152,7 +194,6 @@ public class LoginActivity extends AppCompatActivity
                                                 } else {
                                                     intent = new Intent(getBaseContext(), AdminDashboardActivity.class);
                                                 }
-                                                Toast.makeText(getBaseContext(), "Berhasil Login!", Toast.LENGTH_SHORT).show();
                                                 startActivity(intent);
                                                 finish();
 
@@ -210,7 +251,7 @@ public class LoginActivity extends AppCompatActivity
             validateNoHp();
         }
 
-        if (btnId == R.id.btn_sudah_punya_akun) {
+        if (btnId == R.id.btn_belum_punya_akun) {
             Intent intent = new Intent(this, RegisterActivity.class);
             startActivity(intent);
         }

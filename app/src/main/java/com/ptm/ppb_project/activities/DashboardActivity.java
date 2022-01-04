@@ -3,6 +3,7 @@ package com.ptm.ppb_project.activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.Observer;
@@ -26,6 +27,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.ptm.ppb_project.R;
 import com.ptm.ppb_project.model.ProfileModel;
@@ -85,6 +87,8 @@ public class DashboardActivity extends AppCompatActivity implements View.OnClick
         layoutBiologi.setOnClickListener(this);
         layoutKimia.setOnClickListener(this);
         fab.setOnClickListener(this);
+
+        setSnackbar("Hi, " + loginSession.getLoginSessionData().getFullname() + "!");
     }
 
     @Override
@@ -125,6 +129,23 @@ public class DashboardActivity extends AppCompatActivity implements View.OnClick
                 return true;
             }
         });
+    }
+
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
     }
 
     private void setSQLite() {

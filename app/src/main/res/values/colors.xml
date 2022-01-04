@@ -10,5 +10,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="softOrange">#EAAA42</color>
     <color name="navy">#0B1B70</color>
+    <color name="darknavy">#040D3E</color>
     <color name="red">#E61111</color>
 </resources>

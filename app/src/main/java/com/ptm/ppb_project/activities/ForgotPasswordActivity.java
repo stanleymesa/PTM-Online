@@ -3,11 +3,14 @@ package com.ptm.ppb_project.activities;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -21,6 +24,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
     MaterialButton btnNext;
     FirebaseFirestore firestoreRoot;
     String noHp;
+    ImageView ivBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +34,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
         // Hooks
         tiNoHp = findViewById(R.id.ti_noHp_forgotpassword);
         btnNext = findViewById(R.id.btn_next_forgotpassword);
+        ivBack = findViewById(R.id.iv_back_forgotpass);
 
 
         // Set Firebase
@@ -37,6 +42,7 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
 
         // On Click
         btnNext.setOnClickListener(this);
+        ivBack.setOnClickListener(this);
 
     }
 
@@ -89,5 +95,38 @@ public class ForgotPasswordActivity extends AppCompatActivity implements View.On
         if (btnId == R.id.btn_next_forgotpassword) {
             validateNoHp();
         }
+
+        if (btnId == R.id.iv_back_forgotpass) {
+            MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("Back to Login")
+                    .setCancelable(true)
+                    .setMessage("Apakah anda yakin ingin kembali ke login?")
+                    .setIcon(R.drawable.ic_baseline_directions_run_24)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
+            alertDialog.show();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Back to Login")
+                .setCancelable(true)
+                .setMessage("Apakah anda yakin ingin kembali ke login?")
+                .setIcon(R.drawable.ic_baseline_directions_run_24)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+        alertDialog.show();
     }
 }

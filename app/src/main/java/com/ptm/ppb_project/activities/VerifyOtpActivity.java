@@ -3,10 +3,14 @@ package com.ptm.ppb_project.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 
+import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +19,8 @@ import com.chaos.view.PinView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.FirebaseTooManyRequestsException;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 public class VerifyOtpActivity extends AppCompatActivity implements View.OnClickListener {
 
     TextView tvNoHp;
+    ImageView ivClose;
     ProgressBar progressBar;
     PinView pinview;
     MaterialButton btnVerify;
@@ -55,6 +62,7 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
         // Hooks
         tvNoHp = findViewById(R.id.tv_noHp_verify);
         progressBar = findViewById(R.id.pb_verify);
+        ivClose = findViewById(R.id.iv_close_verify);
         pinview = findViewById(R.id.pinview_verify);
         btnVerify = findViewById(R.id.btn_verify);
 
@@ -86,6 +94,7 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
 
         // On Click
         btnVerify.setOnClickListener(this);
+        ivClose.setOnClickListener(this);
 
         tvNoHp.setText(noHp);
 
@@ -148,7 +157,6 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
                         }
                         // Jika dari login
                         else if (fromWhere.equals("login")) {
-                            Toast.makeText(this, "Berhasil login!", Toast.LENGTH_SHORT).show();
                             loginSession.createLoginSession(dataUser);
                             if (isRememberMe) {
                                 rememberMeSession.createRememberMeSession();
@@ -172,10 +180,27 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
 
                     } else {
                         if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
-                            Toast.makeText(this, "Authentication Failed!", Toast.LENGTH_SHORT).show();
+                            setSnackbar("Authentication Failed!");
                         }
                     }
                 });
+    }
+
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
     }
 
     private void saveDataUserToDB() {
@@ -186,7 +211,6 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
                     .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
-                            Toast.makeText(getBaseContext(), "Register Complete!", Toast.LENGTH_SHORT).show();
                             loginSession.createLoginSession(dataUser);
                             addUserToStats();
                             Intent intent = new Intent(getBaseContext(), DashboardActivity.class);
@@ -197,7 +221,7 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
                     .addOnFailureListener(this, new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(getBaseContext(), "Register Failed!", Toast.LENGTH_SHORT).show();
+                            setSnackbar("Register Failed");
                         }
                     });
         }
@@ -228,17 +252,50 @@ public class VerifyOtpActivity extends AppCompatActivity implements View.OnClick
             if (pinview.getText() != null) {
                 if (!pinview.getText().toString().isEmpty()) {
                     if (progressBar.getVisibility() == View.VISIBLE) {
-                        Toast.makeText(this, "Mohon tunggu sebentar", Toast.LENGTH_SHORT).show();
+                        setSnackbar("Mohon tunggu sebentar...");
                     } else {
                         String manualCode = pinview.getText().toString();
                         verifyCode(manualCode);
                     }
 
                 } else  {
-                    Toast.makeText(this, "Kode OTP tidak boleh kosong!", Toast.LENGTH_SHORT).show();
+                    setSnackbar("Kode OTP tidak boleh kosong!");
                 }
 
             }
         }
+
+        if (btnId == R.id.iv_close_verify) {
+            MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("Close Application")
+                    .setCancelable(true)
+                    .setMessage("Apakah anda yakin ingin keluar?")
+                    .setIcon(R.drawable.ic_baseline_directions_run_24)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishAffinity();
+                        }
+                    });
+            alertDialog.show();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this)
+                .setTitle("Back to Login")
+                .setCancelable(true)
+                .setMessage("Apakah anda yakin ingin kembali ke login?")
+                .setIcon(R.drawable.ic_baseline_directions_run_24)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+        alertDialog.show();
     }
 }

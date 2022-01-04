@@ -53,6 +53,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Stanley Mesa!"
+            android:maxLines="1"
             android:fontFamily="@font/quicksand_medium"
             android:textColor="@color/white"
             android:textSize="26sp"/>

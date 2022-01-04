@@ -3,13 +3,16 @@ package com.ptm.ppb_project.activities;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -32,6 +35,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     String fullname, kelas, namaKelas, absen, email, noHp, password;
     SessionManager loginSession;
     String role = "user";
+    ImageView ivBack, ivClose;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +53,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         tiEmail = findViewById(R.id.ti_email_register);
         tiNoHp = findViewById(R.id.ti_noHp_register);
         tiPassword = findViewById(R.id.ti_password_register);
+        ivBack = findViewById(R.id.iv_back_register);
+        ivClose = findViewById(R.id.iv_close_register);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -58,9 +64,13 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
         setDropdownKelas();
 
+        // On Click
         btnRegister.setOnClickListener(this);
+        ivBack.setOnClickListener(this);
+        ivClose.setOnClickListener(this);
 
     }
+
 
     private void validateFullname() {
         if (tiFullname.getEditText() != null) {
@@ -68,8 +78,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             fullname = tiFullname.getEditText().getText().toString().trim();
             if (fullname.isEmpty()) {
                 tiFullname.setError("Fullname tidak boleh kosong!");
-            }
-            else {
+            } else {
                 tiFullname.setError(null);
             }
         }
@@ -99,8 +108,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             absen = tiAbsen.getEditText().getText().toString().trim();
             if (absen.isEmpty()) {
                 tiAbsen.setError("No.Absen tidak boleh kosong!");
-            }
-            else {
+            } else {
                 tiAbsen.setError(null);
             }
         }
@@ -112,8 +120,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             Pattern regex = Pattern.compile("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+");
             if (email.isEmpty()) {
                 tiEmail.setError("Email tidak boleh kosong!");
-            }
-            else {
+            } else {
                 if (!regex.matcher(email).matches()) {
                     tiEmail.setError("Email tidak sesuai (contoh@email.com)");
                 } else {
@@ -160,8 +167,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             if (noHpAwal.isEmpty()) {
                 tiNoHp.setError("Nomor Handphone tidak boleh kosong!");
                 allValidation();
-            }
-            else {
+            } else {
                 String firstDigit = String.valueOf(noHpAwal.charAt(0));
                 if (firstDigit.equals("0")) {
                     noHp = "+62" + noHpAwal.substring(1);
@@ -206,8 +212,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
             if (password.isEmpty()) {
                 tiPassword.setError("Password tidak boleh kosong!");
-            }
-            else {
+            } else {
                 tiPassword.setError(null);
                 if (!regex.matcher(password).matches()) {
                     tiPassword.setError("Password lemah!\n(minimal 8 karakter, gunakan 1 huruf besar dan angka)");
@@ -227,12 +232,12 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         validatePassword();
 
         if (
-            tiFullname.getError() != null ||
-            tiKelas.getError() != null ||
-            tiNamaKelas.getError() != null ||
-            tiAbsen.getError() != null ||
-            tiEmail.getError() != null ||
-            tiPassword.getError() != null
+                tiFullname.getError() != null ||
+                        tiKelas.getError() != null ||
+                        tiNamaKelas.getError() != null ||
+                        tiAbsen.getError() != null ||
+                        tiEmail.getError() != null ||
+                        tiPassword.getError() != null
         ) {
             return false;
         }
@@ -271,6 +276,26 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
         if (btnId == R.id.btn_register) {
             validateNoHp();
+        }
+
+        if (btnId == R.id.iv_back_register) {
+            finish();
+        }
+
+        if (btnId == R.id.iv_close_register) {
+            MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("Close Application")
+                    .setCancelable(true)
+                    .setMessage("Apakah anda yakin ingin keluar?")
+                    .setIcon(R.drawable.ic_baseline_directions_run_24)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishAffinity();
+                        }
+                    });
+            alertDialog.show();
         }
     }
 }

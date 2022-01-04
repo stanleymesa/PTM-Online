@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -42,9 +43,18 @@
 
             <ImageView
                 android:layout_marginTop="16dp"
-                android:layout_width="200dp"
-                android:layout_height="170dp"
-                android:src="@drawable/tt"/>
+                android:layout_width="180dp"
+                android:layout_height="150dp"
+                android:src="@drawable/logott"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tritunggal"
+                android:textColor="@color/navy"
+                android:fontFamily="@font/quicksand"
+                android:textSize="28sp"
+                android:layout_marginTop="-16dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -146,7 +156,7 @@
                 app:cornerRadius="16dp"/>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_sudah_punya_akun"
+                android:id="@+id/btn_belum_punya_akun"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"

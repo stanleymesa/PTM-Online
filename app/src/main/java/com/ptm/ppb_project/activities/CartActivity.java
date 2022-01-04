@@ -3,6 +3,7 @@ package com.ptm.ppb_project.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -10,11 +11,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -39,6 +43,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
     FirebaseFirestore firestoreRoot;
     CartAdapter adapter;
     ImageView ivBack;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +53,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
         // Hooks
         rvCart = findViewById(R.id.rv_cart);
         ivBack = findViewById(R.id.btn_back_cart);
+        progressBar = findViewById(R.id.progressbar_cart);
 
         // Set Firebase
         mAuth = FirebaseAuth.getInstance();
@@ -100,6 +106,23 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
 
     }
 
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
+    }
+
     private void addKuota(String idPelajaran) {
         firestoreRoot.runTransaction(new Transaction.Function<Void>() {
             @Nullable
@@ -115,16 +138,25 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
                 transaction.update(docRef, "kuota", sisaKuota);
                 return null;
             }
-        }).addOnSuccessListener(new OnSuccessListener<Void>() {
+        }).addOnSuccessListener(this, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Toast.makeText(getBaseContext(), "Delete Success!", Toast.LENGTH_SHORT).show();
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Delete Success!");
+            }
+        })
+        .addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Delete Failed!");
             }
         });
     }
 
     @Override
     public void onItemDeleteFromCart(PelajaranModel dataCart) {
+        progressBar.setVisibility(View.VISIBLE);
         assert mAuth.getCurrentUser() != null;
         firestoreRoot.document("carts/CART_" + mAuth.getCurrentUser().getUid() + "/items/" + dataCart.getId()).delete()
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
@@ -133,10 +165,11 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
                         addKuota(dataCart.getId());
                     }
                 })
-                .addOnFailureListener(new OnFailureListener() {
+                .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getBaseContext(), "Delete Failed!", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                        setSnackbar("Delete Failed!");
                     }
                 });
     }
@@ -147,7 +180,6 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
         int btnId = v.getId();
 
         if (btnId == R.id.btn_back_cart) {
-            startActivity(new Intent(this, DashboardActivity.class));
             finish();
         }
     }

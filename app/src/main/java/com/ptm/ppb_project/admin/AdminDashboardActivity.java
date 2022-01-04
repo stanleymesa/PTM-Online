@@ -3,11 +3,13 @@ package com.ptm.ppb_project.admin;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -19,7 +21,9 @@ import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -41,7 +45,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
     NavigationView navigationView;
     TextView tvNama, tvTime, tvTotalStudents, tvTotalLessons;
     SessionManager loginSession, rememberMeSession;
-    ImageView btnMenu;
+    ImageView btnMenu, ivClose;
     View viewDrawer;
     String currentTime;
     MaterialButton btnLogout;
@@ -65,6 +69,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
         tvTotalStudents = findViewById(R.id.tv_total_students);
         tvTotalLessons = findViewById(R.id.tv_total_lessons);
         rvTodayLessons = findViewById(R.id.rv_today_lessons);
+        ivClose = findViewById(R.id.iv_close_dashboard_admin);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -73,8 +78,12 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
         loginSession = new SessionManager(this, SessionManager.LOGIN_SESSION);
         rememberMeSession = new SessionManager(this, SessionManager.REMEMBERME_SESSION);
 
+        // On Click
         btnMenu.setOnClickListener(this);
         btnLogout.setOnClickListener(this);
+        ivClose.setOnClickListener(this);
+
+        setSnackbar("Hi, " + loginSession.getLoginSessionData().getFullname() + "!");
     }
 
     @Override
@@ -83,6 +92,23 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
         setNavDrawer();
         setAdminArea();
         setInitialTodayLessons();
+    }
+
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
     }
 
     private void setInitialTodayLessons() {
@@ -240,6 +266,22 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
             finish();
+        }
+
+        if (btnId == R.id.iv_close_dashboard_admin) {
+            MaterialAlertDialogBuilder alertDialog = new MaterialAlertDialogBuilder(this)
+                    .setTitle("Close Application")
+                    .setCancelable(true)
+                    .setMessage("Apakah anda yakin ingin keluar?")
+                    .setIcon(R.drawable.ic_baseline_directions_run_24)
+                    .setNegativeButton("Cancel", null)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finishAffinity();
+                        }
+                    });
+            alertDialog.show();
         }
     }
 

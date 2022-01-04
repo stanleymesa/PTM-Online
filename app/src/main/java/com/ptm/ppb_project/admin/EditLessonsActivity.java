@@ -2,6 +2,7 @@ package com.ptm.ppb_project.admin;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
@@ -11,18 +12,22 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.ptm.ppb_project.R;
 import com.ptm.ppb_project.data.DataKelas;
 import com.ptm.ppb_project.model.PelajaranModel;
+import com.ptm.ppb_project.session.SessionManager;
 import com.ptm.ppb_project.timer.TimerPickerFragment;
 
 import java.util.ArrayList;
@@ -38,6 +43,8 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
     String timePickerName = "";
     String matpel, materi, kelas, hari, startAt, finishAt, kuota;
     PelajaranModel dataFromIntent;
+    SessionManager editLessonsSession;
+    ImageView ivBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +67,10 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
         etFinishAt = findViewById(R.id.et_finish_at_editlessons);
         btnPickStart = findViewById(R.id.btn_picktime_start_at_editlessons);
         btnPickFinish = findViewById(R.id.btn_picktime_finish_at_editlessons);
+        ivBack = findViewById(R.id.iv_back_editlessons);
+
+        // Set Session
+        editLessonsSession = new SessionManager(this, SessionManager.EDIT_LESSONS_SESSION);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -68,10 +79,12 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
         btnEditlessons.setOnClickListener(this);
         btnPickStart.setOnClickListener(this);
         btnPickFinish.setOnClickListener(this);
+        ivBack.setOnClickListener(this);
 
         setDropdown();
         setDataFromIntent();
     }
+
 
     private void setDataFromIntent() {
         // Intent
@@ -93,6 +106,23 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
         tiStartAt.getEditText().setText(setTimerFromIntent(dataFromIntent.getStart_at()));
         tiFinishAt.getEditText().setText(setTimerFromIntent(dataFromIntent.getFinish_at()));
         tiKuota.getEditText().setText(String.valueOf(dataFromIntent.getKuota()));
+    }
+
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
     }
 
     private void editLessonToDB() {
@@ -119,13 +149,14 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        Toast.makeText(getBaseContext(), "Berhasil Edit Lessons", Toast.LENGTH_SHORT).show();
+                        editLessonsSession.createEditLessonsSession(true);
+                        finish();
                     }
                 })
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
+                        setSnackbar("Edit Lessons Failed!");
                     }
                 });
     }
@@ -288,6 +319,10 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
             timePickerName = "finish_at";
             DialogFragment timePicker = new TimerPickerFragment();
             timePicker.show(getSupportFragmentManager(), "time_picker");
+        }
+
+        if (btnId == R.id.iv_back_editlessons) {
+            finish();
         }
     }
 

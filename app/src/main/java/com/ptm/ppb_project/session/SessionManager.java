@@ -10,21 +10,36 @@ public class SessionManager {
     SharedPreferences myPref;
     SharedPreferences.Editor editor;
 
+    // Session Type
     public static String LOGIN_SESSION = "loginSession";
     public static String REMEMBERME_SESSION = "rememberMeSession";
+    public static String EDIT_LESSONS_SESSION = "editLessonsSession";
+    public static String ADD_LESSONS_SESSION = "addLessonsSession";
+    public static String UPDATE_PASSWORD_SESSION = "updatePasswordSession";
 
-    public static String KEY_FULLNAME = "fullname";
-    public static String KEY_KELAS = "kelas";
-    public static String KEY_NAMAKELAS = "namaKelas";
-    public static String KEY_ABSEN = "absen";
-    public static String KEY_EMAIL = "email";
-    public static String KEY_NOHP = "noHp";
-    public static String KEY_PASSWORD = "password";
-    public static String KEY_ROLE = "role";
-    public static String KEY_TGL_REGISTER = "tgl_register";
+    // User Session
+    private static final String KEY_FULLNAME = "fullname";
+    private static final String KEY_KELAS = "kelas";
+    private static final String KEY_NAMAKELAS = "namaKelas";
+    private static final String KEY_ABSEN = "absen";
+    private static final String KEY_EMAIL = "email";
+    private static final String KEY_NOHP = "noHp";
+    private static final String KEY_PASSWORD = "password";
+    private static final String KEY_ROLE = "role";
+    private static final String KEY_TGL_REGISTER = "tgl_register";
 
-    private static String IS_LOGGED_IN = "isLoggedIn";
-    private static String IS_REMEMBER_ME = "isRememberMe";
+    private static final String IS_LOGGED_IN = "isLoggedIn";
+    private static final String IS_REMEMBER_ME = "isRememberMe";
+
+    // Edit Lessons Session
+    private static final String IS_EDIT_SUCCESS = "isEditSuccess";
+
+    // Add Lessons Session
+    private static final String IS_ADD_SUCCESS = "isAddSuccess";
+
+    // Update Password Session
+    private static final String IS_PASSWORD_UPDATED = "isPasswordUpdated";
+    private static final String IS_UPDATE_PASSWORD_SUCCESS = "isUpdatePasswordSuccess";
 
     public SessionManager(Context context, String sessionType) {
         myPref = context.getSharedPreferences(sessionType, Context.MODE_PRIVATE);
@@ -82,5 +97,55 @@ public class SessionManager {
 
     public boolean isRememberedMe() {
         return myPref.getBoolean(IS_REMEMBER_ME, false);
+    }
+
+    // Edit Lessons Session
+    public void createEditLessonsSession(boolean isSuccess) {
+        editor.clear();
+        editor.putBoolean(IS_EDIT_SUCCESS, isSuccess);
+        editor.apply();
+    }
+
+    public boolean isEditLessonsSuccess() {
+        return myPref.getBoolean(IS_EDIT_SUCCESS, false);
+    }
+
+    public void clearEditLessonsSession() {
+        editor.clear().apply();
+    }
+
+    // Add Lessons Session
+    public void createAddLessonsSession(boolean isSuccess) {
+        editor.clear();
+        editor.putBoolean(IS_ADD_SUCCESS, isSuccess);
+        editor.apply();
+    }
+
+    public boolean isAddLessonsSuccess() {
+        return myPref.getBoolean(IS_ADD_SUCCESS, false);
+    }
+
+    public void clearAddLessonsSession() {
+        editor.clear().apply();
+    }
+
+    // Update Password Session
+    public void createUpdatePasswordSession(boolean isUpdated, boolean isSuccess) {
+        editor.clear();
+        editor.putBoolean(IS_PASSWORD_UPDATED, isUpdated);
+        editor.putBoolean(IS_UPDATE_PASSWORD_SUCCESS, isSuccess);
+        editor.apply();
+    }
+
+    public boolean isPasswordUpdated() {
+        return myPref.getBoolean(IS_PASSWORD_UPDATED, false);
+    }
+
+    public boolean isUpdatePasswordSuccess() {
+        return myPref.getBoolean(IS_UPDATE_PASSWORD_SUCCESS, false);
+    }
+
+    public void clearUpdatePasswordSession() {
+        editor.clear().apply();
     }
 }

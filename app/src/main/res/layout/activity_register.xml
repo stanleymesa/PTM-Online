@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -14,20 +15,22 @@
         android:layout_height="70dp">
 
         <ImageView
+            android:id="@+id/iv_back_register"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
             android:layout_marginStart="16dp"
-            android:src="@drawable/ic_baseline_arrow_back_ios_24"/>
+            android:src="@drawable/ic_baseline_arrow_back_ios_24" />
 
         <ImageView
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
+            android:id="@+id/iv_close_register"
             android:layout_width="30dp"
             android:layout_height="30dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_baseline_close_24"/>
+            android:src="@drawable/ic_baseline_close_24" />
 
     </RelativeLayout>
 
@@ -48,9 +51,18 @@
 
             <ImageView
                 android:layout_marginTop="16dp"
-                android:layout_width="200dp"
-                android:layout_height="170dp"
-                android:src="@drawable/tt"/>
+                android:layout_width="180dp"
+                android:layout_height="150dp"
+                android:src="@drawable/logott"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tritunggal"
+                android:textColor="@color/navy"
+                android:fontFamily="@font/quicksand"
+                android:textSize="28sp"
+                android:layout_marginTop="-16dp"/>
 
             <TextView
                 android:layout_width="match_parent"

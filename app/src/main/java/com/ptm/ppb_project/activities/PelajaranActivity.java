@@ -3,6 +3,7 @@ package com.ptm.ppb_project.activities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -11,11 +12,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -80,6 +83,23 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
         }
     }
 
+    private void setSnackbar(String text) {
+        Snackbar snackbar = Snackbar.make(findViewById(R.id.content), text, Snackbar.LENGTH_SHORT)
+                .setAction("OK", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                    }
+                })
+                .setBackgroundTint(getResources().getColor(R.color.darknavy))
+                .setActionTextColor(getResources().getColor(R.color.white));
+        View snackbarView = snackbar.getView();
+        TextView snackbarText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_text);
+        TextView actionText = snackbarView.findViewById(com.google.android.material.R.id.snackbar_action);
+        snackbarText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_medium));
+        actionText.setTypeface(ResourcesCompat.getFont(this, R.font.quicksand_bold));
+        snackbar.show();
+    }
+
 
     private void setPelajaranAdapter(String matpel) {
 
@@ -112,18 +132,14 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                                 dataId.add(ds.getId());
                             }
 
-                            firestoreRoot.collection("pelajaran").whereIn(FieldPath.documentId(), dataId)
-                                    .addSnapshotListener(PelajaranActivity.this, new EventListener<QuerySnapshot>() {
+                            firestoreRoot.collection("pelajaran").whereIn(FieldPath.documentId(), dataId).get()
+                                    .addOnSuccessListener(PelajaranActivity.this, new OnSuccessListener<QuerySnapshot>() {
                                         @Override
-                                        public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
-                                            if (error != null) {
-                                                return;
-                                            }
-
+                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                                             // Jika ada pelajarannya
-                                            if (value != null && !value.isEmpty()) {
+                                            if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
                                                 ArrayList<PelajaranModel> dataCart = new ArrayList<>();
-                                                for (DocumentSnapshot ds : value) {
+                                                for (DocumentSnapshot ds : queryDocumentSnapshots) {
                                                     dataCart.add(ds.toObject(PelajaranModel.class));
                                                 }
                                                 adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
@@ -135,9 +151,33 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                                                 adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
                                             }
                                             rv.setAdapter(adapter);
-
                                         }
                                     });
+//                                    {
+//                                        @Override
+//                                        public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
+//                                            if (error != null) {
+//                                                return;
+//                                            }
+//
+//                                            // Jika ada pelajarannya
+//                                            if (value != null && !value.isEmpty()) {
+//                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
+//                                                for (DocumentSnapshot ds : value) {
+//                                                    dataCart.add(ds.toObject(PelajaranModel.class));
+//                                                }
+//                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
+//                                            }
+//
+//                                            // Jika tidak ada pelajarannya
+//                                            else {
+//                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
+//                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
+//                                            }
+//                                            rv.setAdapter(adapter);
+//
+//                                        }
+//                                    });
 
                         }
 
@@ -177,7 +217,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
         .addOnSuccessListener(this, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                Toast.makeText(getBaseContext(), "Add Success!", Toast.LENGTH_SHORT).show();
+                setSnackbar("Add Success!");
             }
         });
     }
@@ -202,7 +242,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
-                        Toast.makeText(getBaseContext(), "Delete Success!", Toast.LENGTH_SHORT).show();
+                        setSnackbar("Delete Success!");
                     }
                 });
     }
@@ -220,7 +260,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getBaseContext(), "Add Failed!", Toast.LENGTH_SHORT).show();
+                        setSnackbar("Add Failed!");
                     }
                 });
     }
@@ -237,7 +277,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(getBaseContext(), "Delete Failed!", Toast.LENGTH_SHORT).show();
+                        setSnackbar("Delete Failed!");
                     }
                 });
     }
@@ -246,8 +286,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
     public void onClick(View v) {
         int btnId = v.getId();
 
-        if (btnId == R.id.btn_back_pelajaran) {
-            startActivity(new Intent(this, DashboardActivity.class));
+        if (btnId == R.id.iv_back_pelajaran) {
             finish();
         }
     }
