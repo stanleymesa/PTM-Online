@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Space;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,27 +19,20 @@ import com.ptm.ppb_project.model.PelajaranModel;
 
 import java.util.ArrayList;
 
-public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, PelajaranAdapter.PelajaranViewHolder> {
+public class PelajaranAdapter extends RecyclerView.Adapter<PelajaranAdapter.PelajaranViewHolder> {
 
     private OnItemClickCallback onItemClickCallback;
+    private ArrayList<PelajaranModel> dataPelajaran;
     private ArrayList<PelajaranModel> dataCart;
 
     public PelajaranAdapter(
-            @NonNull FirestoreRecyclerOptions<PelajaranModel> options,
             OnItemClickCallback onItemClickCallback,
+            ArrayList<PelajaranModel> dataPelajaran,
             ArrayList<PelajaranModel> dataCart
     ) {
-        super(options);
         this.onItemClickCallback = onItemClickCallback;
+        this.dataPelajaran = dataPelajaran;
         this.dataCart = dataCart;
-    }
-
-    // MEMASUKKAN LAYOUT ITEM ROW KE ADAPTER
-    @NonNull
-    @Override
-    public PelajaranViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row_pelajaran, parent, false);
-        return new PelajaranViewHolder(view);
     }
 
     // INISIALISASI & DEFINISI
@@ -52,6 +46,7 @@ public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, P
         private final TextView tvKuota;
         private final ImageView ivPlus;
         private final ImageView ivMinus;
+        private final Space space;
 
         public PelajaranViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -63,6 +58,11 @@ public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, P
             ivPlus = itemView.findViewById(R.id.iv_plus);
             ivMinus = itemView.findViewById(R.id.iv_minus);
             tvKuota = itemView.findViewById(R.id.tv_kuota);
+            space = itemView.findViewById(R.id.space_pelajaran);
+        }
+
+        public Space getSpace() {
+            return space;
         }
 
         public TextView getTvKuota() {
@@ -98,24 +98,19 @@ public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, P
         }
     }
 
-    private String convertToString(long waktu) {
-        String waktuString = String.valueOf(waktu);
-
-        // Menambahkan : waktuString
-        StringBuilder after = new StringBuilder(waktuString);
-        if (waktuString.length() == 3) {
-            after.insert(1, ":");
-        } else {
-            after.insert(2, ":");
-        }
-        return after.toString();
+    // MEMASUKKAN LAYOUT ITEM ROW KE ADAPTER
+    @NonNull
+    @Override
+    public PelajaranViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_row_pelajaran, parent, false);
+        return new PelajaranViewHolder(view);
     }
 
-
-    // MENGATUR PER ITEM
     @SuppressLint("SetTextI18n")
     @Override
-    protected void onBindViewHolder(@NonNull PelajaranViewHolder holder, int position, @NonNull PelajaranModel model) {
+    public void onBindViewHolder(@NonNull PelajaranViewHolder holder, int position) {
+        PelajaranModel model = dataPelajaran.get(position);
+
         holder.getTvKelas().setText("Kelas " + model.getKelas());
         holder.getTvMateri().setText(model.getMateri());
 
@@ -161,7 +156,7 @@ public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, P
             if (myCart.getHari().equals(model.getHari())) {
                 if (
                         (model.getStart_at() >= myCart.getStart_at() && model.getStart_at() <= myCart.getFinish_at()) ||
-                        (model.getFinish_at() >= myCart.getStart_at() && model.getFinish_at() <= myCart.getFinish_at())
+                                (model.getFinish_at() >= myCart.getStart_at() && model.getFinish_at() <= myCart.getFinish_at())
                 ) {
                     holder.ivPlus.setVisibility(View.GONE);
                     holder.getTvBentrokTitle().setVisibility(View.VISIBLE);
@@ -174,8 +169,33 @@ public class PelajaranAdapter extends FirestoreRecyclerAdapter<PelajaranModel, P
         }
         // End Logic Button
 
+
+
+        // Space at last item
+        if (position == getItemCount() - 1) {
+            holder.space.setVisibility(View.VISIBLE);
+        }
     }
 
+    @Override
+    public int getItemCount() {
+        return dataPelajaran.size();
+    }
+
+
+
+    private String convertToString(long waktu) {
+        String waktuString = String.valueOf(waktu);
+
+        // Menambahkan : waktuString
+        StringBuilder after = new StringBuilder(waktuString);
+        if (waktuString.length() == 3) {
+            after.insert(1, ":");
+        } else {
+            after.insert(2, ":");
+        }
+        return after.toString();
+    }
 
 
     public interface OnItemClickCallback {

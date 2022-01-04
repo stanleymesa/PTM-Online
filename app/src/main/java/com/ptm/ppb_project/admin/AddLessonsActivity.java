@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -49,6 +50,7 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
     String matpel, materi, kelas, hari, startAt, finishAt, kuota;
     SessionManager addLessonsSession;
     ImageView ivBack;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +74,7 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
         btnPickStart = findViewById(R.id.btn_picktime_start_at_addlessons);
         btnPickFinish = findViewById(R.id.btn_picktime_finish_at_addlessons);
         ivBack = findViewById(R.id.iv_back_addlessons);
+        progressBar = findViewById(R.id.pb_addlessons);
 
         // Set Session
         addLessonsSession = new SessionManager(this, SessionManager.ADD_LESSONS_SESSION);
@@ -113,6 +116,7 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
             return;
         }
 
+        progressBar.setVisibility(View.VISIBLE);
         String id = UUID.randomUUID().toString();
         PelajaranModel pelajaranModel = new PelajaranModel(
                 id,
@@ -136,7 +140,8 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        setSnackbar("Gagal Input Lessons!");
+                        progressBar.setVisibility(View.GONE);
+                        setSnackbar("Add Lessons Failed!");
                     }
                 });
     }
@@ -155,11 +160,19 @@ public class AddLessonsActivity extends AppCompatActivity implements View.OnClic
                 return null;
             }
         })
-        .addOnSuccessListener(new OnSuccessListener<Void>() {
+        .addOnSuccessListener(this, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
+                progressBar.setVisibility(View.GONE);
                 addLessonsSession.createAddLessonsSession(true);
                 finish();
+            }
+        })
+        .addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Add Lessons Failed!");
             }
         });
     }

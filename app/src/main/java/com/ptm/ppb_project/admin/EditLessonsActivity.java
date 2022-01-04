@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -45,6 +46,7 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
     PelajaranModel dataFromIntent;
     SessionManager editLessonsSession;
     ImageView ivBack;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,7 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
         btnPickStart = findViewById(R.id.btn_picktime_start_at_editlessons);
         btnPickFinish = findViewById(R.id.btn_picktime_finish_at_editlessons);
         ivBack = findViewById(R.id.iv_back_editlessons);
+        progressBar = findViewById(R.id.pb_editlessons);
 
         // Set Session
         editLessonsSession = new SessionManager(this, SessionManager.EDIT_LESSONS_SESSION);
@@ -131,6 +134,7 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
             return;
         }
 
+        progressBar.setVisibility(View.VISIBLE);
         String id = dataFromIntent.getId();
 
         PelajaranModel pelajaranModel = new PelajaranModel(
@@ -149,6 +153,7 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void unused) {
+                        progressBar.setVisibility(View.GONE);
                         editLessonsSession.createEditLessonsSession(true);
                         finish();
                     }
@@ -156,6 +161,7 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        progressBar.setVisibility(View.GONE);
                         setSnackbar("Edit Lessons Failed!");
                     }
                 });

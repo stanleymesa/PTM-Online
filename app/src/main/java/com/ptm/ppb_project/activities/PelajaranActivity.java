@@ -7,11 +7,13 @@ import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,7 +48,10 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
     SessionManager loginSession;
     PelajaranAdapter adapter;
     String uid;
+    ProgressBar progressBar;
+    TextView tvTitle;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,6 +60,10 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
         // Hooks
         ivBack = findViewById(R.id.iv_back_pelajaran);
         rv = findViewById(R.id.rv_pelajaran);
+        progressBar = findViewById(R.id.pb_pelajaran);
+        tvTitle = findViewById(R.id.tv_title_pelajaran);
+
+
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -81,6 +90,10 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
         else if (fromWhere.equals("Kimia")){
             setPelajaranAdapter(fromWhere);
         }
+
+        // Set Title
+        tvTitle.setText(fromWhere + " Kelas " + loginSession.getLoginSessionData().getKelas() );
+
     }
 
     private void setSnackbar(String text) {
@@ -103,94 +116,102 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
 
     private void setPelajaranAdapter(String matpel) {
 
+        progressBar.setVisibility(View.VISIBLE);
         String kelas = loginSession.getLoginSessionData().getKelas();
-
-        Query query = firestoreRoot.collection("pelajaran")
-                .orderBy("start_at", Query.Direction.ASCENDING)
-                .whereEqualTo("matpel", matpel)
-                .whereEqualTo("kelas", kelas);
-
-        FirestoreRecyclerOptions<PelajaranModel> options = new FirestoreRecyclerOptions.Builder<PelajaranModel>()
-                .setLifecycleOwner(this)
-                .setQuery(query, PelajaranModel.class)
-                .build();
-
         rv.setLayoutManager(new LinearLayoutManager(getBaseContext()));
 
-        // CEK CART
-        firestoreRoot.collection("carts/CART_" + uid + "/items")
+        firestoreRoot.collection("pelajaran")
+                .orderBy("start_at", Query.Direction.ASCENDING)
+                .whereEqualTo("matpel", matpel)
+                .whereEqualTo("kelas", kelas)
                 .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
                     @Override
-                    public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                    public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
+
                         if (error != null) {
+                            progressBar.setVisibility(View.GONE);
                             return;
                         }
-                        // Jika Cart ada
+
+                        // Jika Pelajaran Ada
                         if (value != null && !value.isEmpty()) {
-                            ArrayList<String> dataId = new ArrayList<>();
+                            ArrayList<PelajaranModel> dataPelajaran = new ArrayList<>();
                             for (DocumentSnapshot ds : value) {
-                                dataId.add(ds.getId());
+                                dataPelajaran.add(ds.toObject(PelajaranModel.class));
                             }
 
-                            firestoreRoot.collection("pelajaran").whereIn(FieldPath.documentId(), dataId).get()
-                                    .addOnSuccessListener(PelajaranActivity.this, new OnSuccessListener<QuerySnapshot>() {
+
+                            // CEK CART
+                            firestoreRoot.collection("carts/CART_" + uid + "/items")
+                                    .addSnapshotListener(PelajaranActivity.this, new EventListener<QuerySnapshot>() {
                                         @Override
-                                        public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                            // Jika ada pelajarannya
-                                            if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
-                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
-                                                for (DocumentSnapshot ds : queryDocumentSnapshots) {
-                                                    dataCart.add(ds.toObject(PelajaranModel.class));
-                                                }
-                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
+                                        public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
+
+                                            if (error != null) {
+                                                progressBar.setVisibility(View.GONE);
+                                                return;
                                             }
 
-                                            // Jika tidak ada pelajarannya
+                                            // Jika Cart Ada
+                                            if (value != null && !value.isEmpty()) {
+                                                ArrayList<String> dataId = new ArrayList<>();
+                                                for (DocumentSnapshot ds : value) {
+                                                    dataId.add(ds.getId());
+                                                }
+
+
+                                                firestoreRoot.collection("pelajaran").whereIn(FieldPath.documentId(), dataId).get()
+                                                        .addOnSuccessListener(PelajaranActivity.this, new OnSuccessListener<QuerySnapshot>() {
+                                                            @Override
+                                                            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                                                                // Jika ada pelajarannya
+                                                                if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
+                                                                    ArrayList<PelajaranModel> dataCart = new ArrayList<>();
+                                                                    for (DocumentSnapshot ds : queryDocumentSnapshots) {
+                                                                        dataCart.add(ds.toObject(PelajaranModel.class));
+                                                                    }
+                                                                    adapter = new PelajaranAdapter(PelajaranActivity.this, dataPelajaran, dataCart);
+                                                                }
+
+                                                                // Jika tidak ada pelajarannya
+                                                                else {
+                                                                    ArrayList<PelajaranModel> dataCart = new ArrayList<>();
+                                                                    adapter = new PelajaranAdapter(PelajaranActivity.this, dataPelajaran, dataCart);
+                                                                }
+                                                                rv.setAdapter(adapter);
+                                                                progressBar.setVisibility(View.GONE);
+                                                            }
+                                                        })
+                                                        .addOnFailureListener(PelajaranActivity.this, new OnFailureListener() {
+                                                            @Override
+                                                            public void onFailure(@NonNull Exception e) {
+                                                                progressBar.setVisibility(View.GONE);
+                                                            }
+                                                        });
+
+
+                                            }
+                                            // Jika tidak ada Cart
                                             else {
                                                 ArrayList<PelajaranModel> dataCart = new ArrayList<>();
-                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
+                                                adapter = new PelajaranAdapter(PelajaranActivity.this, dataPelajaran, dataCart);
+                                                rv.setAdapter(adapter);
+                                                progressBar.setVisibility(View.GONE);
                                             }
-                                            rv.setAdapter(adapter);
+
                                         }
                                     });
-//                                    {
-//                                        @Override
-//                                        public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
-//                                            if (error != null) {
-//                                                return;
-//                                            }
-//
-//                                            // Jika ada pelajarannya
-//                                            if (value != null && !value.isEmpty()) {
-//                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
-//                                                for (DocumentSnapshot ds : value) {
-//                                                    dataCart.add(ds.toObject(PelajaranModel.class));
-//                                                }
-//                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
-//                                            }
-//
-//                                            // Jika tidak ada pelajarannya
-//                                            else {
-//                                                ArrayList<PelajaranModel> dataCart = new ArrayList<>();
-//                                                adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
-//                                            }
-//                                            rv.setAdapter(adapter);
-//
-//                                        }
-//                                    });
 
                         }
 
-                        // Jika tidak ada Cart
+                        // Jika Pelajaran Tidak Ada
                         else {
-                            ArrayList<PelajaranModel> dataCart = new ArrayList<>();
-                            adapter = new PelajaranAdapter(options, PelajaranActivity.this, dataCart);
-                            rv.setAdapter(adapter);
-
+                            progressBar.setVisibility(View.GONE);
                         }
+
+
                     }
                 });
-
 
     }
 
@@ -217,7 +238,15 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
         .addOnSuccessListener(this, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
+                progressBar.setVisibility(View.GONE);
                 setSnackbar("Add Success!");
+            }
+        })
+        .addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Add Failed!");
             }
         });
     }
@@ -239,16 +268,25 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                 return null;
             }
         })
-                .addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        setSnackbar("Delete Success!");
-                    }
-                });
+        .addOnSuccessListener(this, new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void unused) {
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Delete Success!");
+            }
+        })
+        .addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Delete Failed!");
+            }
+        });
     }
 
     @Override
     public void onItemAddToCart(PelajaranModel dataPelajaran) {
+        progressBar.setVisibility(View.VISIBLE);
         CartModel dataCart = new CartModel(System.currentTimeMillis());
         firestoreRoot.document("carts/CART_" + uid + "/items/" + dataPelajaran.getId()).set(dataCart)
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
@@ -261,12 +299,14 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                     @Override
                     public void onFailure(@NonNull Exception e) {
                         setSnackbar("Add Failed!");
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
     }
 
     @Override
     public void onItemDeleteFromCart(PelajaranModel dataPelajaran) {
+        progressBar.setVisibility(View.VISIBLE);
         firestoreRoot.document("carts/CART_" + uid + "/items/" + dataPelajaran.getId()).delete()
                 .addOnSuccessListener(this, new OnSuccessListener<Void>() {
                     @Override
@@ -277,6 +317,7 @@ public class PelajaranActivity extends AppCompatActivity implements PelajaranAda
                 .addOnFailureListener(this, new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        progressBar.setVisibility(View.GONE);
                         setSnackbar("Delete Failed!");
                     }
                 });

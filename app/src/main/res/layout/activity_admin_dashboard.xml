@@ -147,16 +147,19 @@
 
                 <TextView
                     android:id="@+id/tv_total_students"
-                    android:layout_width="wrap_content"
+                    android:layout_width="110dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="@font/quicksand_bold"
                     android:textColor="@color/white"
                     android:textSize="32sp"
+                    android:textAlignment="center"
+                    android:maxLines="1"
                     app:layout_constraintLeft_toLeftOf="@id/layout_registeredstudents_admin"
                     app:layout_constraintRight_toRightOf="@id/layout_registeredstudents_admin"
                     app:layout_constraintTop_toBottomOf="@id/tv_title_registeredstudents"
-                    tools:text="1024" />
+                    tools:text="1024"
+                    android:ellipsize="end"/>
 
 
                 <RelativeLayout
@@ -187,7 +190,10 @@
 
                 <TextView
                     android:id="@+id/tv_total_lessons"
-                    android:layout_width="wrap_content"
+                    android:layout_width="110dp"
+                    android:textAlignment="center"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="@font/quicksand_bold"
@@ -239,6 +245,16 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.core.widget.NestedScrollView>
+
+        <ProgressBar
+            android:id="@+id/pb_admindashboard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

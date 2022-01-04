@@ -66,6 +66,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
     }
 
     private void setCartAdapter() {
+        progressBar.setVisibility(View.VISIBLE);
         assert mAuth.getCurrentUser() != null;
 
         rvCart.setLayoutManager(new LinearLayoutManager(this));
@@ -75,6 +76,7 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
                     @Override
                     public void onEvent(QuerySnapshot value, FirebaseFirestoreException error) {
                         if (error != null) {
+                            progressBar.setVisibility(View.GONE);
                             return;
                         }
 
@@ -94,11 +96,13 @@ public class CartActivity extends AppCompatActivity implements CartAdapter.OnIte
                                     .build();
                             adapter = new CartAdapter(options, CartActivity.this, cartCreatedAt);
                             rvCart.setAdapter(adapter);
+                            progressBar.setVisibility(View.GONE);
                         }
 
                         // Jika tidak ada cart
                         else {
                             rvCart.setVisibility(View.GONE);
+                            progressBar.setVisibility(View.GONE);
                         }
 
                     }

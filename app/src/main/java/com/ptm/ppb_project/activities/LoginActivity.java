@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +47,7 @@ public class LoginActivity extends AppCompatActivity
     FirebaseAuth mAuth;
     FirebaseFirestore firestoreRoot;
     SessionManager loginSession, rememberMeSession, updatePasswordSession;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +62,7 @@ public class LoginActivity extends AppCompatActivity
         tiNoHp = findViewById(R.id.ti_noHp_login);
         tiPassword = findViewById(R.id.ti_password_login);
         rememberMeCheckbox = findViewById(R.id.checkbox_rememberme);
-        updatePasswordSession = new SessionManager(this, SessionManager.UPDATE_PASSWORD_SESSION);
+        progressBar = findViewById(R.id.pb_login);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -69,6 +71,7 @@ public class LoginActivity extends AppCompatActivity
         // Set Session
         loginSession = new SessionManager(this, SessionManager.LOGIN_SESSION);
         rememberMeSession = new SessionManager(this, SessionManager.REMEMBERME_SESSION);
+        updatePasswordSession = new SessionManager(this, SessionManager.UPDATE_PASSWORD_SESSION);
 
         setEditTextLoginSession();
 
@@ -159,11 +162,13 @@ public class LoginActivity extends AppCompatActivity
                 }
 
                 // Cek apakah nomor HP ada di DB
+                progressBar.setVisibility(View.VISIBLE);
                 firestoreRoot.collection("users").whereEqualTo("noHp", noHp)
                         .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
                             @Override
                             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                                 if (error != null) {
+                                    progressBar.setVisibility(View.GONE);
                                     return;
                                 }
 
@@ -194,6 +199,7 @@ public class LoginActivity extends AppCompatActivity
                                                 } else {
                                                     intent = new Intent(getBaseContext(), AdminDashboardActivity.class);
                                                 }
+                                                progressBar.setVisibility(View.GONE);
                                                 startActivity(intent);
                                                 finish();
 
@@ -208,21 +214,28 @@ public class LoginActivity extends AppCompatActivity
                                                 } else {
                                                     intent.putExtra("isRememberMe", false);
                                                 }
+                                                progressBar.setVisibility(View.GONE);
                                                 startActivity(intent);
                                             }
 
                                         }
                                         // Jika Password tidak sesuai dengan DB
                                         else {
+                                            progressBar.setVisibility(View.GONE);
                                             tiPassword.setError("Password anda salah!");
                                         }
 
+                                    }
+                                    // Jika Password lemah
+                                    else {
+                                        progressBar.setVisibility(View.GONE);
                                     }
 
                                 }
 
                                 // Jika nomor HP tidak ada di DB
                                 else {
+                                    progressBar.setVisibility(View.GONE);
                                     tiNoHp.setError("Nomor handphone belum terdaftar!");
                                     tiPassword.setError(null);
                                 }

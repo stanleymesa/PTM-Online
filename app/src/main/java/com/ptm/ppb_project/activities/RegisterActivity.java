@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -36,6 +37,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     SessionManager loginSession;
     String role = "user";
     ImageView ivBack, ivClose;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         tiPassword = findViewById(R.id.ti_password_register);
         ivBack = findViewById(R.id.iv_back_register);
         ivClose = findViewById(R.id.iv_close_register);
+        progressBar = findViewById(R.id.pb_register);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -119,9 +122,11 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             email = tiEmail.getEditText().getText().toString().trim();
             Pattern regex = Pattern.compile("[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+");
             if (email.isEmpty()) {
+                progressBar.setVisibility(View.GONE);
                 tiEmail.setError("Email tidak boleh kosong!");
             } else {
                 if (!regex.matcher(email).matches()) {
+                    progressBar.setVisibility(View.GONE);
                     tiEmail.setError("Email tidak sesuai (contoh@email.com)");
                 } else {
 
@@ -131,19 +136,23 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                 @Override
                                 public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                                     if (error != null) {
+                                        progressBar.setVisibility(View.GONE);
                                         return;
                                     }
 
                                     // Jika email ada di DB
                                     if (value != null && !value.isEmpty()) {
+                                        progressBar.setVisibility(View.GONE);
                                         tiEmail.setError("Email telah dipakai");
                                     }
 
                                     // Jika email tidak ada di DB
                                     else {
+                                        progressBar.setVisibility(View.GONE);
                                         tiEmail.setError(null);
 
                                         if (!goIntent) {
+                                            progressBar.setVisibility(View.GONE);
                                             return;
                                         }
                                         // Intent to Verify OTP
@@ -176,16 +185,19 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 }
 
                 // Cek apakah nomor HP sudah dipakai di DB
+                progressBar.setVisibility(View.VISIBLE);
                 firestoreRoot.collection("users").whereEqualTo("noHp", noHp)
                         .addSnapshotListener(this, new EventListener<QuerySnapshot>() {
                             @Override
                             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                                 if (error != null) {
+                                    progressBar.setVisibility(View.GONE);
                                     return;
                                 }
 
                                 // Jika nomor HP ada di DB
                                 if (value != null && !value.isEmpty()) {
+                                    progressBar.setVisibility(View.GONE);
                                     tiNoHp.setError("Nomor Handphone telah dipakai");
                                     allValidation();
                                 }
@@ -195,6 +207,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                                     tiNoHp.setError(null);
                                     if (allValidation()) {
                                         validateEmail(true);
+                                    }
+                                    else {
+                                        progressBar.setVisibility(View.GONE);
                                     }
 
                                 }

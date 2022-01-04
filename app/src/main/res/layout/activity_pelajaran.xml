@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/content"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".activities.PelajaranActivity">
 
     <RelativeLayout
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         android:id="@+id/layout_topBar"
         android:layout_width="match_parent"
         android:layout_height="70dp">
@@ -23,10 +25,25 @@
             android:layout_marginStart="16dp"
             android:src="@drawable/ic_baseline_arrow_back_ios_24" />
 
+        <TextView
+            android:id="@+id/tv_title_pelajaran"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Matematika Kelas 11"
+            android:textSize="20sp"
+            android:fontFamily="@font/quicksand_medium"
+            android:textColor="@color/navy"
+            android:layout_marginEnd="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"/>
+
 
     </RelativeLayout>
 
     <ScrollView
+        app:layout_constraintTop_toBottomOf="@id/layout_topBar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -49,5 +66,15 @@
 
     </ScrollView>
 
+    <ProgressBar
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/pb_pelajaran"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
-</LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

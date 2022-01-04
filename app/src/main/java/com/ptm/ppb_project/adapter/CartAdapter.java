@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Space;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -38,6 +39,7 @@ public class CartAdapter extends FirestoreRecyclerAdapter<PelajaranModel, CartAd
         private final TextView tvWaktu;
         private final TextView tvCreatedAt;
         private final ImageView ivMinus;
+        private final Space space;
 
 
         public CartViewHolder(@NonNull View itemView) {
@@ -49,8 +51,14 @@ public class CartAdapter extends FirestoreRecyclerAdapter<PelajaranModel, CartAd
             tvWaktu = itemView.findViewById(R.id.tv_waktu_cart);
             tvCreatedAt = itemView.findViewById(R.id.tv_createdAt);
             ivMinus = itemView.findViewById(R.id.iv_minus_cart);
+            space = itemView.findViewById(R.id.space_cart);
 
         }
+
+        public Space getSpace() {
+            return space;
+        }
+
         public TextView getTvMatpel() {
             return tvMatpel;
         }
@@ -93,6 +101,12 @@ public class CartAdapter extends FirestoreRecyclerAdapter<PelajaranModel, CartAd
                 onItemClickCallback.onItemDeleteFromCart(model);
             }
         });
+
+        // Add Space to last item
+        if (position == getItemCount() - 1) {
+            holder.space.setVisibility(View.VISIBLE);
+        }
+
     }
 
     @NonNull

@@ -17,8 +17,10 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -54,6 +56,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
     DocumentSnapshot lastVisible;
     ArrayList<PelajaranModel> listPelajaran = new ArrayList<>();
     TodayLessonsAdapter adapter;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +73,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
         tvTotalLessons = findViewById(R.id.tv_total_lessons);
         rvTodayLessons = findViewById(R.id.rv_today_lessons);
         ivClose = findViewById(R.id.iv_close_dashboard_admin);
+        progressBar = findViewById(R.id.pb_admindashboard);
 
         // Set Firebase
         firestoreRoot = FirebaseFirestore.getInstance();
@@ -112,6 +116,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
     }
 
     private void setInitialTodayLessons() {
+        progressBar.setVisibility(View.VISIBLE);
         listPelajaran.clear();
         rvTodayLessons.setLayoutManager(new LinearLayoutManager(this));
 
@@ -125,6 +130,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (queryDocumentSnapshots.isEmpty()) {
+                            progressBar.setVisibility(View.GONE);
                             return;
                         }
 
@@ -134,11 +140,19 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
                         adapter = new TodayLessonsAdapter(listPelajaran, AdminDashboardActivity.this);
                         rvTodayLessons.setAdapter(adapter);
                         lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size()-1);
+                        progressBar.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
     }
 
     private void setTodayLessons() {
+        progressBar.setVisibility(View.VISIBLE);
         Query query = firestoreRoot.collection("pelajaran")
                 .orderBy("kelas", Query.Direction.ASCENDING)
                 .orderBy("start_at", Query.Direction.ASCENDING)
@@ -151,6 +165,7 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
                     @Override
                     public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                         if (queryDocumentSnapshots.isEmpty()) {
+                            progressBar.setVisibility(View.GONE);
                             return;
                         }
 
@@ -159,6 +174,13 @@ public class AdminDashboardActivity extends AppCompatActivity implements View.On
                         }
                         lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size()-1);
                         adapter.notifyDataSetChanged();
+                        progressBar.setVisibility(View.GONE);
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        progressBar.setVisibility(View.GONE);
                     }
                 });
     }

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +16,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,7 +53,9 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
     String hint = "";
     ArrayList<PelajaranModel> listPelajaran = new ArrayList<>();
     SessionManager editLessonsSession, addLessonsSession;
-    ImageView ivBack;
+    ImageView ivBack, ivSearching;
+    ProgressBar progressBar;
+    SwipeRefreshLayout srl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +67,9 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
         fabAddLessons = findViewById(R.id.fab_add_lessons);
         rvSearch = findViewById(R.id.rv_search_lessons);
         ivBack = findViewById(R.id.iv_back_searchlessons);
+        ivSearching = findViewById(R.id.iv_searching);
+        progressBar = findViewById(R.id.pb_searchlessons);
+        srl = findViewById(R.id.srl_searchlessons);
 
         // Set Session
         editLessonsSession = new SessionManager(this, SessionManager.EDIT_LESSONS_SESSION);
@@ -74,8 +81,12 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
         // On Click
         fabAddLessons.setOnClickListener(this);
         ivBack.setOnClickListener(this);
+        ivSearching.setOnClickListener(this);
 
         setSearch();
+        setSwipeRefresh();
+
+
     }
 
     @Override
@@ -86,6 +97,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
     }
 
     private void initiateRecycler(String hint) {
+        progressBar.setVisibility(View.VISIBLE);
         listPelajaran.clear();
         rvSearch.setLayoutManager(new LinearLayoutManager(this));
 
@@ -101,6 +113,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                             if (queryDocumentSnapshots.isEmpty()) {
+                                progressBar.setVisibility(View.GONE);
                                 return;
                             }
 
@@ -110,6 +123,13 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                             adapter = new SearchLessonsAdapter(listPelajaran, SearchLessonsActivity.this);
                             rvSearch.setAdapter(adapter);
                             lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    })
+                    .addOnFailureListener(this, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressBar.setVisibility(View.GONE);
                         }
                     });
         }
@@ -126,6 +146,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                             if (queryDocumentSnapshots.isEmpty()) {
+                                progressBar.setVisibility(View.GONE);
                                 return;
                             }
 
@@ -135,10 +156,27 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                             adapter = new SearchLessonsAdapter(listPelajaran, SearchLessonsActivity.this);
                             rvSearch.setAdapter(adapter);
                             lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    })
+                    .addOnFailureListener(this, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressBar.setVisibility(View.GONE);
                         }
                     });
         }
 
+    }
+
+    private void setSwipeRefresh() {
+        srl.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                initiateRecycler(hint);
+                srl.setRefreshing(false);
+            }
+        });
     }
 
     private void setAddOrEditLessonsSnackbar() {
@@ -155,6 +193,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
 
     private void showMoreRecycler(String hint) {
 
+        progressBar.setVisibility(View.VISIBLE);
         if (hint.isEmpty()) {
             firestoreRoot.collection("pelajaran")
                     .orderBy("kelas")
@@ -168,6 +207,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                             if (queryDocumentSnapshots.isEmpty()) {
+                                progressBar.setVisibility(View.GONE);
                                 return;
                             }
 
@@ -176,6 +216,13 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                             }
                             adapter.notifyDataSetChanged();
                             lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    })
+                    .addOnFailureListener(this, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressBar.setVisibility(View.GONE);
                         }
                     });
         }
@@ -193,6 +240,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                         public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
 
                             if (queryDocumentSnapshots.isEmpty()) {
+                                progressBar.setVisibility(View.GONE);
                                 return;
                             }
 
@@ -201,6 +249,13 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                             }
                             adapter.notifyDataSetChanged();
                             lastVisible = queryDocumentSnapshots.getDocuments().get(queryDocumentSnapshots.size() - 1);
+                            progressBar.setVisibility(View.GONE);
+                        }
+                    })
+                    .addOnFailureListener(this, new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            progressBar.setVisibility(View.GONE);
                         }
                     });
         }
@@ -213,7 +268,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    hint = tiSearch.getEditText().getText().toString().toLowerCase();
+                    hint = tiSearch.getEditText().getText().toString().trim().toLowerCase();
                     initiateRecycler(hint);
                 }
 
@@ -236,10 +291,19 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                 return null;
             }
         })
-        .addOnSuccessListener(new OnSuccessListener<Void>() {
+        .addOnSuccessListener(this, new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                setSnackbar("Berhasil delete lesson!");
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Delete Lessons Success!");
+                initiateRecycler(hint);
+            }
+        })
+        .addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                progressBar.setVisibility(View.GONE);
+                setSnackbar("Delete Lessons Failed!");
                 initiateRecycler(hint);
             }
         });
@@ -274,6 +338,12 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
         if (btnId == R.id.iv_back_searchlessons) {
             finish();
         }
+
+        if (btnId == R.id.iv_searching) {
+            assert tiSearch.getEditText() != null;
+            hint = tiSearch.getEditText().getText().toString().trim().toLowerCase();
+            initiateRecycler(hint);
+        }
     }
 
     @Override
@@ -298,6 +368,7 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        progressBar.setVisibility(View.VISIBLE);
                         firestoreRoot.document("pelajaran/" + pelajaranModel.getId()).delete()
                                 .addOnSuccessListener(SearchLessonsActivity.this, new OnSuccessListener<Void>() {
                                     @Override
@@ -308,7 +379,8 @@ public class SearchLessonsActivity extends AppCompatActivity implements View.OnC
                                 .addOnFailureListener(SearchLessonsActivity.this, new OnFailureListener() {
                                     @Override
                                     public void onFailure(@NonNull Exception e) {
-                                        setSnackbar("Gagal delete lesson!");
+                                        progressBar.setVisibility(View.GONE);
+                                        setSnackbar("Delete Lessons Failed!");
                                     }
                                 });
                     }
