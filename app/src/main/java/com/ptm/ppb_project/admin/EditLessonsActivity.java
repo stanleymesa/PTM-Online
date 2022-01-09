@@ -84,7 +84,6 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
         btnPickFinish.setOnClickListener(this);
         ivBack.setOnClickListener(this);
 
-        setDropdown();
         setDataFromIntent();
     }
 
@@ -109,6 +108,9 @@ public class EditLessonsActivity extends AppCompatActivity implements View.OnCli
         tiStartAt.getEditText().setText(setTimerFromIntent(dataFromIntent.getStart_at()));
         tiFinishAt.getEditText().setText(setTimerFromIntent(dataFromIntent.getFinish_at()));
         tiKuota.getEditText().setText(String.valueOf(dataFromIntent.getKuota()));
+
+        setDropdown();
+
     }
 
     private void setSnackbar(String text) {
